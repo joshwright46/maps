@@ -43,7 +43,7 @@ pylint==2.5.3
 pytest==5.4.1
 python-dateutil==2.9.0.post0
 pytz==2024.1
-PyYAML==5.4
+PyYAML==5.3.1
 ratelimit==2.2.1
 requests==2.31.0
 requests-oauthlib==2.0.0
