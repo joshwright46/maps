@@ -21,6 +21,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiPara
 from directory.models import ContactMethod, CoopType, Address, AddressCache, CoopAddressTags, CoopPublic, Coop, CoopProposal, Person
 from directory.serializers import *
 from directory.renderers import CSVRenderer
+from directory.permissions import IsOwnerOrAdmin
 
 @extend_schema_view(
     get=extend_schema(
@@ -71,7 +72,7 @@ class CoopCSVView(APIView):
 class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsOwnerOrAdmin]
 
 @extend_schema(
     request=UserProfileSerializer,
@@ -224,8 +225,24 @@ class StateList(APIView):
             return Response(states_data[input_country_code], status.HTTP_200_OK)
         else:
             return Response("Country not found.", status.HTTP_404_NOT_FOUND)
-        
+
 class PasswordResetRequestView(APIView):
+    @extend_schema(
+        request=inline_serializer(
+            name='PasswordResetRequestSerializer',
+            fields={
+                'email': serializers.EmailField()
+            }
+        ),
+        responses={
+            status.HTTP_200_OK: inline_serializer(
+                name='PasswordResetResponseSerializer',
+                fields={
+                    'message': serializers.CharField()
+                }
+            )
+        }
+    )
     def post(self, request):
         email = request.data.get("email")
         user = User.objects.filter(email=email).first()
