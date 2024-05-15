@@ -120,9 +120,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return user_profile
 
     def update(self, instance, validated_data):
-        print(instance)
-        print(validated_data)
-        user_data = validated_data.pop('user')
+        user_data = validated_data.pop('user', {})
         user = instance.user
         for key, value in user_data.items():
             if key == 'password':
