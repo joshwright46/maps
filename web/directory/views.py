@@ -14,12 +14,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter, inline_serializer
 
 from directory.models import ContactMethod, CoopType, Address, AddressCache, CoopAddressTags, CoopPublic, Coop, CoopProposal, Person
 from directory.serializers import *
 from directory.renderers import CSVRenderer
+from directory.permissions import IsOwnerOrAdmin
 
 @extend_schema_view(
     get=extend_schema(
@@ -66,20 +68,19 @@ class CoopCSVView(APIView):
                     })
 
         return Response(data)
-    
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
 
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+class UserDetail(generics.RetrieveUpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsOwnerOrAdmin]
 
-class CreateUserView(APIView):
+@extend_schema(
+    request=UserProfileSerializer,
+    responses=TokenObtainPairSerializer
+)
+class UserRegister(APIView):
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = UserProfileSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             if user:
@@ -224,8 +225,24 @@ class StateList(APIView):
             return Response(states_data[input_country_code], status.HTTP_200_OK)
         else:
             return Response("Country not found.", status.HTTP_404_NOT_FOUND)
-        
+
 class PasswordResetRequestView(APIView):
+    @extend_schema(
+        request=inline_serializer(
+            name='PasswordResetRequestSerializer',
+            fields={
+                'email': serializers.EmailField()
+            }
+        ),
+        responses={
+            status.HTTP_200_OK: inline_serializer(
+                name='PasswordResetResponseSerializer',
+                fields={
+                    'message': serializers.CharField()
+                }
+            )
+        }
+    )
     def post(self, request):
         email = request.data.get("email")
         user = User.objects.filter(email=email).first()
