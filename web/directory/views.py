@@ -22,6 +22,7 @@ from directory.models import ContactMethod, CoopType, Address, AddressCache, Coo
 from directory.serializers import *
 from directory.renderers import CSVRenderer
 from directory.permissions import IsOwnerOrAdmin
+from directory.pagination import StandardResultsSetPagination
 
 @extend_schema_view(
     get=extend_schema(
@@ -286,7 +287,6 @@ class PasswordResetConfirmView(APIView):
     )
 )
 class CoopProposalList(generics.ListAPIView):
-    queryset = CoopProposal.objects.all()
     serializer_class = CoopProposalListSerializer
     permission_classes = [IsAdminUser]
 
@@ -312,7 +312,10 @@ class CoopProposalList(generics.ListAPIView):
             except:
                 pass
 
+        queryset = queryset.select_related('coop')
         return queryset
+    
+    pagination_class = StandardResultsSetPagination
 
 class CoopProposalRetrieve(generics.RetrieveAPIView):
     queryset = CoopProposal.objects.all()
