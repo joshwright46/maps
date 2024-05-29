@@ -1,5 +1,6 @@
 from .base import *
 import os
+from datetime import timedelta
 
 DEBUG=True
 
@@ -53,4 +54,9 @@ LOGGING = {
             'handlers': ['console'],
         }
     }
+}
+
+SIMPLE_JWT  = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=24),
 }
