@@ -27,7 +27,7 @@ urlpatterns = [
     path('api/v1/coops/csv/', views.CoopCSVView.as_view(), name='data'),
     
     path('api/v1/coops/proposal/', views.CoopProposalList.as_view(), name='coop-proposal-list'),
-    path('api/v1/coops/proposal/<int:pk>/', views.CoopProposalRetrieve.as_view(), name='coop-proposal-list'),
+    path('api/v1/coops/proposal/<int:pk>/', views.CoopProposalRetrieve.as_view(), name='coop-proposal-detail'),
     path('api/v1/coops/proposal/create/', views.CoopProposalCreate.as_view(), name='coop-proposal'),
     path('api/v1/coops/proposal/review/<int:pk>/', views.CoopProposalReview.as_view(), name='coop-review'),
 
