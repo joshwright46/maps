@@ -334,7 +334,7 @@ class CoopProposalCreateSerializer(serializers.ModelSerializer):
         validated_data["proposal_status"] = "PENDING"
         validated_data["operation"] = "CREATE"
         validated_data["requested_datetime"] = now()
-        validated_data["change_summary"] = json.dumps(validated_data, default=str)
+        validated_data["change_summary"] = json.dumps(coop_data, default=str)
         # Create CoopProposal object
         coop_proposal = CoopProposal.objects.create(**validated_data)
 
@@ -355,7 +355,7 @@ class CoopProposalCreateSerializer(serializers.ModelSerializer):
         validated_data["proposal_status"] = "PENDING"
         validated_data["operation"] = "UPDATE"
         validated_data["requested_datetime"] = now()
-        validated_data["change_summary"] = json.dumps(validated_data, default=str)
+        validated_data["change_summary"] = json.dumps(coop_data, default=str)
         validated_data["coop_public"] = CoopPublic.objects.get(id=validated_data["coop_public_id"])
         # Create CoopProposal object
         coop_proposal = CoopProposal.objects.create(**validated_data)
