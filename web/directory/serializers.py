@@ -143,15 +143,7 @@ class CoopPublicListSerializer(serializers.ModelSerializer):
         model = CoopPublic
         fields = ['id', 'status', 'created_by', 'created_datetime', 'last_modified_by', 'last_modified_datetime']
 
-class CoopProposalListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CoopProposal
-        fields = ['id', 'proposal_status', 'operation', 'change_summary', 'review_notes', 'coop_public', 'requested_by', 'requested_datetime', 'reviewed_by', 'reviewed_datetime', 'coop']
 
-class CoopProposalRetrieveSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CoopProposal
-        fields = ['id', 'proposal_status', 'operation', 'change_summary', 'review_notes', 'coop_public', 'requested_by', 'requested_datetime', 'reviewed_by', 'reviewed_datetime', 'coop']
 
 class PersonSerializer(serializers.ModelSerializer):
     contact_methods = ContactMethodSerializer(many=True)
@@ -342,7 +334,7 @@ class CoopProposalCreateSerializer(serializers.ModelSerializer):
         validated_data["proposal_status"] = "PENDING"
         validated_data["operation"] = "CREATE"
         validated_data["requested_datetime"] = now()
-        validated_data["change_summary"] = json.dumps(validated_data, default=str)
+        validated_data["change_summary"] = json.dumps(coop_data, default=str)
         # Create CoopProposal object
         coop_proposal = CoopProposal.objects.create(**validated_data)
 
@@ -363,7 +355,7 @@ class CoopProposalCreateSerializer(serializers.ModelSerializer):
         validated_data["proposal_status"] = "PENDING"
         validated_data["operation"] = "UPDATE"
         validated_data["requested_datetime"] = now()
-        validated_data["change_summary"] = json.dumps(validated_data, default=str)
+        validated_data["change_summary"] = json.dumps(coop_data, default=str)
         validated_data["coop_public"] = CoopPublic.objects.get(id=validated_data["coop_public_id"])
         # Create CoopProposal object
         coop_proposal = CoopProposal.objects.create(**validated_data)
@@ -513,3 +505,17 @@ class CoopProposalReviewSerializer(serializers.ModelSerializer):
         ret = super(CoopProposalReviewSerializer, self).to_representation(instance)
         ret['coop_public_id'] = instance.coop_public.id #if instance.coop_public else None
         return ret
+    
+class CoopProposalListSerializer(serializers.ModelSerializer):
+    coop = CoopSerializer()
+    
+    class Meta:
+        model = CoopProposal
+        fields = ['id', 'proposal_status', 'operation', 'change_summary', 'review_notes', 'coop_public', 'requested_by', 'requested_datetime', 'reviewed_by', 'reviewed_datetime', 'coop']
+
+class CoopProposalRetrieveSerializer(serializers.ModelSerializer):
+    coop = CoopSerializer()
+    
+    class Meta:
+        model = CoopProposal
+        fields = ['id', 'proposal_status', 'operation', 'change_summary', 'review_notes', 'coop_public', 'requested_by', 'requested_datetime', 'reviewed_by', 'reviewed_datetime', 'coop']
