@@ -190,7 +190,7 @@ class CoopsNoCoords(generics.ListAPIView):
 
 class CoopsUnapproved(generics.ListAPIView):
     queryset = CoopProposal.objects.filter(proposal_status=CoopProposal.ProposalStatusEnum.PENDING)
-    serializer_class = CoopSerializer
+    serializer_class = CoopProposalListSerializer
     permission_classes = [IsAdminUser]
     
 class CoopTypeList(generics.ListAPIView):
