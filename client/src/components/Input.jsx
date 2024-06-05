@@ -14,6 +14,8 @@ const Input = (props) => {
         isInvalid={props.errors && errorsArr}
         type={props.type}
         id={props.name}
+        data-index={props.index}
+        data-parent={props.parent}
         name={props.name}
         value={props.value}
         placeholder={props.placeholder}
