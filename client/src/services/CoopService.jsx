@@ -21,6 +21,40 @@ class CoopService {
       });
   }
 
+  proposeUpdate(coop, setErrors, callback) {
+    // Make a copy of the object in order to remove unneeded properties
+    const body = JSON.stringify(coop);
+    const url = REACT_APP_PROXY + '/api/v1/coops/proposal/create/';
+    const method = 'POST';
+    const bearerToken = sessionStorage.getItem('token');
+
+    fetch(url, {
+      method: method,
+      body: body,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bearerToken}`,
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw response;
+        }
+      })
+      .then((data) => {
+        callback(data);
+      })
+      .catch((err) => {
+        console.log('errors ...');
+        err.text().then((errorMessage) => {
+          console.log(JSON.parse(errorMessage));
+          setErrors(JSON.parse(errorMessage));
+        });
+      });
+  }
   saveAsConsumer(coop, setErrors, callback) {
     if (coop.id) {
       this.update(coop, setErrors, callback);
@@ -44,8 +78,8 @@ class CoopService {
       body: body,
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
       .then((response) => {
         if (response.ok) {
@@ -73,7 +107,7 @@ class CoopService {
     delete NC.addresses[0].address.country;
     const body = JSON.stringify({
       id: coop.id,
-      proposed_changes: NC
+      proposed_changes: NC,
     });
     const url = REACT_APP_PROXY + '/api/v1/coops/' + coop.id + '/';
     const method = 'PATCH';
@@ -82,8 +116,8 @@ class CoopService {
       body: body,
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
       .then((response) => {
         if (response.ok) {
@@ -113,8 +147,8 @@ class CoopService {
       body: JSON.stringify(body),
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
       .then((response) => {
         if (response.ok) {
