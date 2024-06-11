@@ -3,6 +3,7 @@ import datetime
 from pathlib import Path
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+REPO_ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'corsheaders',
     'pytest',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -67,6 +69,8 @@ AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
     { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
+
+AUTH_USER_MODEL = 'users.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/

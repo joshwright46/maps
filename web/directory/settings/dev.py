@@ -8,10 +8,13 @@ SECRET_KEY = 'unsafe-default-key'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+FRONTEND_ROOT_URL = "http://localhost:3000" #No trailing slash needed.
+BACKEND_ROOT_URL = "http://localhost:8000" #No trailing slash needed.
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / '/data/db.sqlite3',
+        'NAME': os.path.join(REPO_ROOT_DIR, 'data/db.sqlite3'),
     }
 }
 

@@ -14,6 +14,7 @@ gunicorn==20.1.0
 pandas==1.2.0
 pathlib==1.0.1
 phonenumbers==8.11.2
+pillow==10.3.0
 psycopg2-binary==2.8.6
 pycountry==19.8.18
 pylint==2.5.3

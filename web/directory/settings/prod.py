@@ -15,6 +15,9 @@ if SECRET_KEY == 'unsafe-default-key':
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'dev.chicommons.coop', 'prod.chicommons.coop', 'map.chicommons.coop']
 
+FRONTEND_ROOT_URL = "http://localhost:3000" #TODO: Add your domain name here. No trailing slash needed.
+BACKEND_ROOT_URL = "http://localhost:8000" #TODO: Add your domain name here. No trailing slash needed.
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

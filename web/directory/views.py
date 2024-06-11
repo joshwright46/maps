@@ -70,28 +70,6 @@ class CoopCSVView(APIView):
 
         return Response(data)
 
-class UserDetail(generics.RetrieveUpdateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [IsOwnerOrAdmin]
-
-@extend_schema(
-    request=UserProfileSerializer,
-    responses=TokenObtainPairSerializer
-)
-class UserRegister(APIView):
-    def post(self, request):
-        serializer = UserProfileSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            if user:
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @extend_schema_view(
     get=extend_schema(
         parameters=[
@@ -226,56 +204,6 @@ class StateList(APIView):
             return Response(states_data[input_country_code], status.HTTP_200_OK)
         else:
             return Response("Country not found.", status.HTTP_404_NOT_FOUND)
-
-class PasswordResetRequestView(APIView):
-    @extend_schema(
-        request=inline_serializer(
-            name='PasswordResetRequestSerializer',
-            fields={
-                'email': serializers.EmailField()
-            }
-        ),
-        responses={
-            status.HTTP_200_OK: inline_serializer(
-                name='PasswordResetResponseSerializer',
-                fields={
-                    'message': serializers.CharField()
-                }
-            )
-        }
-    )
-    def post(self, request):
-        email = request.data.get("email")
-        user = User.objects.filter(email=email).first()
-        if user:
-            token_generator = PasswordResetTokenGenerator()
-            token = token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            link = request.build_absolute_uri(reverse('password-reset-confirm', args=[uid, token]))
-            send_mail(
-                "Password Reset Request",
-                f'Please go to the following link to reset your password: {link}',
-                'from@example.com',
-                [email],
-                fail_silently=False,
-            )
-            return Response({"message": "Password reset link has been sent to your email."}, status=status.HTTP_200_OK)
-        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-class PasswordResetConfirmView(APIView):
-    def post(self, request, uidb64, token):
-        try:
-            uid = urlsafe_base64_decode(uidb64).decode()
-            user = User.objects.get(pk=uid)
-        except:
-            user = None
-        token_generator = PasswordResetTokenGenerator()
-        if user is not None and token_generator.check_token(user, token):
-            new_password = request.data.get("password")
-            user.set_password(new_password)
-            user.save()
-            return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid token or user ID."}, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema_view(
     get=extend_schema(

@@ -1,16 +1,7 @@
 from django.db import models
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import User
+from users.models import User
 from phonenumber_field.modelfields import PhoneNumberField
-from django.db.models import Prefetch
-from django.utils.timezone import now
-from django.conf import settings
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    phone = PhoneNumberField(blank=True)
-    github_username = models.CharField(max_length=165, blank=True)
 
 class ContactMethod(models.Model):
     class ContactTypes(models.TextChoices):
