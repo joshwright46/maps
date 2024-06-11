@@ -5,17 +5,55 @@ import CoopService from '../services/CoopService';
 import Input from '../components/Input';
 import DropDownInput from '../components/DropDownInput';
 import TextAreaInput from '../components/TextAreaInput';
-import Country from './Country.jsx';
-import Province from './Province.jsx';
+
 import { DEFAULT_COUNTRY_CODE, DEFAULT_FORM_YES_NO } from '../utils/constants';
 import { useAlert } from '../components/AlertProvider';
 import Button from '../components/Button';
 import '../containers/FormContainer.css';
 import CancelButton from './CancelButton';
+import AddressInputGroup from './AddressInputGroup';
+import ContactMethodInput from './ContactMethodInput';
+import ContactPersonInput from './ContactPersonInput';
 
 const { REACT_APP_PROXY } = process.env;
 
 export default function DirectoryAddUpdate() {
+  /**
+   * @typedef {object} Address
+   * @property {string} street_address - the street address of the entity
+   * @property {string} city - the city of the entity
+   * @property {string} state - the state of the entity
+   * @property {string} postal_code - the postal code of the entity
+   * @property {string} country - the country of the entity
+   * @property {string} county - the county of the entity
+   */
+
+  /**
+   * @typedef {object} AddressObj 
+   * @property {Address} address - the address of the entity
+   * @property {number} id - the id of the address
+   * @property {boolean} is_public - whether the address is public
+   * /
+ 
+  /**
+   * @typedef {object} ContactObject 
+   * @property {string} email - the email of the entity
+   * @property {string} phone - the phone number of the entity
+   * @property {boolean} is_public - whether the contact information is public
+   * @property  type - the type of contact information
+   * @property {('EMAIL'|'PHONE')} type - the type of contact information
+   * @property {number} id - the id of the contact information
+   */
+
+  /**
+   * @typedef {object} Person
+   * @property {string} first_name - the first name of a person
+   * @property {string} last_name - the last name of a person
+   * @property {boolean} is_public - whether the person's information is public
+   * @property {Array<ContactObject>} contact_methods - the contact methods for the team member
+   * @property {number} id - the id of the person
+   */
+
   const [coopObj, setCoopObj] = useState({});
   const [coopName, setCoopName] = useState('');
   const [street, setStreet] = useState('');
@@ -26,16 +64,35 @@ export default function DirectoryAddUpdate() {
   const [county, setCounty] = useState('');
   const [country, setCountry] = useState(DEFAULT_COUNTRY_CODE);
   const [websites, setWebsites] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactMethods, setContactMethods] = useState('');
-  const [contactNamePublic, setContactNamePublic] =
-    useState(DEFAULT_FORM_YES_NO);
+
+  /**
+   * @type {ReturnType<typeof useState<Array<Person>>}
+   */
+  const [contactPerson, setContactPerson] = useState([
+    {
+      first_name: '',
+      last_name: '',
+      is_public: 'yes',
+      contact_methods: [
+        {
+          phone: null,
+          email: null,
+          is_public: 'yes',
+          type: 'PHONE',
+        },
+      ],
+    },
+  ]);
+
+  /**
+   * @type {ReturnType<typeof useState<Array<ContactObject>>}
+   */
+  const [contactMethods, setContactMethods] = useState([
+    { phone: null, email: null, is_public: 'yes', type: 'PHONE' },
+  ]);
+
   const [contactEmail, setContactEmail] = useState([]);
-  const [contactEmailPublic, setContactEmailPublic] =
-    useState(DEFAULT_FORM_YES_NO);
   const [contactPhone, setContactPhone] = useState('');
-  const [contactPhonePublic, setContactPhonePublic] =
-    useState(DEFAULT_FORM_YES_NO);
   const [entityTypes, setEntityTypes] = useState([]);
   const [scope, setScope] = useState('Local');
   const [tags, setTags] = useState('');
@@ -77,12 +134,7 @@ export default function DirectoryAddUpdate() {
     setCounty('');
     setCountry(DEFAULT_COUNTRY_CODE);
     setWebsites('');
-    setContactName('');
-    setContactNamePublic(DEFAULT_FORM_YES_NO);
-    //     setContactEmail([]);
-    //     setContactEmailPublic(DEFAULT_FORM_YES_NO);
-    //     setContactPhone('');
-    //     setContactPhonePublic(DEFAULT_FORM_YES_NO);
+    setContactPerson([]);
     setEntityTypes([]);
     setScope('Local');
     setTags('');
@@ -177,15 +229,17 @@ export default function DirectoryAddUpdate() {
   // Check required fields to see if they're still blank
   const requiredFields = [
     coopName,
+    street,
+    city,
+    county,
     websites,
-    contactName,
     contactEmail,
     contactPhone,
-    entityTypes
+    entityTypes,
   ];
 
   const updateRequired = (field) => {
-    const asArray = Object.entries(errors);
+    const asArray = Object.entries(errors?.coop);
 
     let filteredItem = '';
 
@@ -193,11 +247,11 @@ export default function DirectoryAddUpdate() {
       case coopName:
         filteredItem = 'coop_name';
         break;
+      case county:
+        filteredItem = 'county';
+        break;
       case websites:
         filteredItem = 'websites';
-        break;
-      case contactName:
-        filteredItem = 'contact_name';
         break;
       case contactEmail:
         filteredItem = 'contact';
@@ -208,9 +262,11 @@ export default function DirectoryAddUpdate() {
       case entityTypes:
         filteredItem = 'entity_types';
         break;
+      default:
+        break;
     }
 
-    if (errors.hasOwnProperty(filteredItem)) {
+    if (errors?.coop?.hasOwnProperty(filteredItem)) {
       setErrors(
         Object.fromEntries(
           asArray.filter(([key, value]) => key !== filteredItem)
@@ -243,7 +299,6 @@ export default function DirectoryAddUpdate() {
         throw Error('Cannot access requested entity.');
       }
       const coopResults = await res.json();
-      console.log('[coopresults]', coopResults);
 
       setCoopName(coopResults.name ? coopResults.name : '');
       setStreet(
@@ -274,8 +329,11 @@ export default function DirectoryAddUpdate() {
       setWebsites(coopResults.web_site ? coopResults.web_site : '');
       setContactEmail(coopResults.email ? coopResults.email : []);
       setContactPhone(coopResults.phone ? coopResults.phone : []);
+      coopResults.people.length > 0 && setContactPerson(coopResults.people);
       setContactMethods(
-        coopResults.contact_methods ? coopResults.contact_methods : []
+        coopResults.contact_methods.length > 0
+          ? coopResults.contact_methods
+          : [{ phone: null, email: null, is_public: 'yes', type: 'PHONE' }]
       );
       setEntityTypes(
         [coopResults.types[0]] ? coopResults.types.map((type) => type.name) : []
@@ -311,37 +369,43 @@ export default function DirectoryAddUpdate() {
     }
 
     let result = entityTypes.map((type) => ({ name: type }));
+
     let formData = {
-      id: id,
-      name: coopName,
-      types: result,
-      addresses: [
-        {
-          is_public: true,
-          address: {
-            street_address: street,
-            city: city,
-            postal_code: zip,
-            state: state,
-            country: country
-          }
-        }
-      ],
-      contact_methods: contactMethods,
-      web_site: websites,
-      description: descEng
+      coop_public_id: id,
+      operation: 'UPDATE',
+      coop: {
+        types: result,
+        contact_methods: contactMethods,
+        people: contactPerson,
+        addresses: [
+          {
+            address: {
+              street_address: street,
+              city: city,
+              county: county,
+              state: state,
+              postal_code: zip,
+              country: country,
+            },
+            is_public: addressPublic,
+          },
+        ],
+        status: 'ACTIVE',
+        name: coopName,
+        web_site: websites,
+        description: descEng,
+        is_public: true,
+        scope: scope,
+        tags: tags,
+      },
     };
 
-    console.log('saving with id ' + id);
-
-    CoopService.saveAsConsumer(
+    CoopService.proposeUpdate(
       formData,
       (errors) => {
-        //setButtonDisabled(false);
         setErrors(errors);
       },
-      function (data) {
-        const result = data;
+      function () {
         clearForm();
         window.scrollTo(0, 0);
 
@@ -394,14 +458,7 @@ export default function DirectoryAddUpdate() {
         setEntityTypeList(initialEntityTypes);
       });
 
-    // TESTING WITH APPROVAL FUNCTIONALITY
-    console.log(location.pathname);
-
     if (id) {
-      console.log('there is an id');
-
-      console.log(location.pathname.includes('approve'));
-
       if (location.pathname.includes('approve')) {
         setApprovalForm(true);
       }
@@ -421,48 +478,48 @@ export default function DirectoryAddUpdate() {
     checkRequired();
   }, requiredFields);
 
-  const handlePhoneChange = (event, key) => {
+  const handlePersonChange = (event, key) => {
     event.preventDefault();
-    const { name, value } = event.target;
-    const updatedValues = [...contactPhone];
-    const selectedItem = contactPhone[name];
-    selectedItem[key] = value;
-    updatedValues[name] = selectedItem;
-    setContactPhone(updatedValues);
+    const { dataset, value } = event.target;
+    const updatedValues = [...contactPerson];
+    const selectedItem = contactPerson[dataset.index]; // select index of contactPerson state
+    selectedItem[key] = value; // key of selected index
+    updatedValues[dataset.index] = selectedItem;
+    setContactPerson(updatedValues);
   };
 
-  const handleEmailChange = (event, key) => {
+  const handlePersonContactChange = (event, key) => {
     event.preventDefault();
-    const { name, value } = event.target;
-    const updatedValues = [...contactEmail];
-    const selectedItem = contactEmail[name];
+    const { dataset, value } = event.target;
+    const updatedValues = [...contactPerson];
+    const selectedItem =
+      contactPerson[dataset.parent]['contact_methods'][dataset.index];
     selectedItem[key] = value;
-    updatedValues[name] = selectedItem;
-    setContactEmail(updatedValues);
+    updatedValues[dataset.parent]['contact_methods'][dataset.index] =
+      selectedItem;
+    setContactPerson(updatedValues);
   };
 
   const handleContactMethodChange = (event, key) => {
     event.preventDefault();
-    const { name, value } = event.target;
+    const { dataset, value } = event.target;
     const updatedValues = [...contactMethods];
-    const selectedItem = contactMethods[name];
+    const selectedItem = contactMethods[dataset.index];
     selectedItem[key] = value;
-    updatedValues[name] = selectedItem;
+    updatedValues[dataset.index] = selectedItem;
     setContactMethods(updatedValues);
   };
 
-  const addPhoneField = () => {
-    let newPhoneArray = [...contactPhone];
-    let newField = { type: 'PHONE', phone: '', phone_is_public: false };
-    newPhoneArray.push(newField);
-    setContactPhone(newPhoneArray);
-  };
-
-  const addEmailField = () => {
-    let newEmailArray = [...contactEmail];
-    let newField = { type: 'EMAIL', email: '', email_is_public: false };
-    newEmailArray.push(newField);
-    setContactEmail(newEmailArray);
+  const addContactPerson = () => {
+    let newContactPerson = [...contactPerson];
+    let newField = {
+      first_name: '',
+      last_name: '',
+      is_public: 'yes',
+      contact_methods: [],
+    };
+    newContactPerson.push(newField);
+    setContactPerson(newContactPerson);
   };
 
   const addContactMethodField = () => {
@@ -521,7 +578,7 @@ export default function DirectoryAddUpdate() {
                   errors={errors}
                 />{' '}
               </div>
-              <AddressGroup
+              <AddressInputGroup
                 street={street}
                 city={city}
                 state={state}
@@ -556,38 +613,12 @@ export default function DirectoryAddUpdate() {
                   errors={errors}
                 />{' '}
               </div>
-              <div className="form-group col-md-6">
-                <Input
-                  className={'required'}
-                  type={'text'}
-                  title={'Cooperative/Entity Contact Person Name'}
-                  name={'contact_name'}
-                  value={contactName}
-                  placeholder={'Contact name'}
-                  handleChange={(e) => setContactName(e.target.value)}
-                  errors={errors}
-                />{' '}
-              </div>
-              <div className="form-group col-md-6">
-                <DropDownInput
-                  className={'required'}
-                  type={'select'}
-                  as={'select'}
-                  title={'Is Contact name to be public on the map?'}
-                  name={'contact_name_public'}
-                  value={contactNamePublic}
-                  multiple={''}
-                  handleChange={(e) => setContactNamePublic(e.target.value)}
-                  options={[
-                    { id: 'yes', name: 'Yes' },
-                    { id: 'no', name: 'No' }
-                  ]}
-                />
-              </div>
 
               {contactMethods &&
                 contactMethods.map((contact, index) => (
                   <ContactMethodInput
+                    key={index}
+                    prefix={'General'}
                     contactMethod={contact}
                     index={index}
                     handleContactMethodChange={handleContactMethodChange}
@@ -600,6 +631,25 @@ export default function DirectoryAddUpdate() {
                   title={'Add Contact Method'}
                   type={'button'}
                   action={addContactMethodField}
+                />
+              </div>
+              <div className="form-group col-md-6 col-lg-6"></div>
+              {contactPerson &&
+                contactPerson.map((person, index) => (
+                  <ContactPersonInput
+                    person={person}
+                    index={index}
+                    handlePersonChange={handlePersonChange}
+                    handleContactMethodChange={handlePersonContactChange}
+                    errors={errors}
+                  />
+                ))}
+              <div className="form-group col-md-4 col-lg-4">
+                <Button
+                  buttonType={'primary'}
+                  title={'Add Contact Person'}
+                  type={'button'}
+                  action={addContactPerson}
                 />
               </div>
               <div className="form-group col-md-6 col-lg-6"></div>
@@ -647,7 +697,7 @@ export default function DirectoryAddUpdate() {
                     { id: 'local', name: 'Local' },
                     { id: 'regional', name: 'Regional' },
                     { id: 'national', name: 'National' },
-                    { id: 'international', name: 'International' }
+                    { id: 'international', name: 'International' },
                   ]}
                 />
               </div>
@@ -698,7 +748,7 @@ export default function DirectoryAddUpdate() {
                   handleChange={(e) => setReqReason(e.target.value)}
                   options={[
                     { id: 'add', name: 'Add new record' },
-                    { id: 'update', name: 'Update existing record' }
+                    { id: 'update', name: 'Update existing record' },
                   ]}
                 />
               </div>
@@ -732,173 +782,3 @@ export default function DirectoryAddUpdate() {
     </div>
   );
 }
-
-const ContactMethodInput = ({
-  contactMethod,
-  index,
-  handleContactMethodChange,
-  errors
-}) => {
-  const { type, is_public, phone, email, id } = contactMethod;
-  const inputType = type === 'PHONE' ? 'phone' : 'email';
-  const value = type === 'PHONE' ? phone : email;
-  const title =
-    type === 'PHONE' ? 'Contact Phone Number' : 'Contact Email Address';
-  const placeholder = type === 'PHONE' ? 'Contact phone' : 'Contact email';
-  const valueType = type === 'PHONE' ? 'phone' : 'email';
-  const typeLabel = type === 'PHONE' ? 'Phone' : 'Email';
-
-  return (
-    <>
-      <div key={id} className="form-group col-md-4 col-lg-4">
-        <Input
-          type={inputType}
-          title={title}
-          name={index}
-          value={value}
-          placeholder={placeholder}
-          handleChange={(e) => handleContactMethodChange(e, valueType)}
-          errors={errors}
-        />{' '}
-      </div>
-      <div key={id} className="form-group col-md-4 col-lg-4">
-        <DropDownInput
-          className={'required'}
-          type={'select'}
-          as={'select'}
-          title={`Type`}
-          name={index}
-          multiple={''}
-          value={type}
-          handleChange={(e) => handleContactMethodChange(e, 'type')}
-          options={[
-            { id: 'phone', name: 'PHONE' },
-            { id: 'email', name: 'EMAIL' }
-          ]}
-        />
-      </div>
-      <div key={id} className="form-group col-md-4 col-lg-4">
-        <DropDownInput
-          className={'required'}
-          type={'select'}
-          as={'select'}
-          title={`Is ${typeLabel} to be public on the map?`}
-          name={index}
-          multiple={''}
-          value={is_public}
-          handleChange={(e) => handleContactMethodChange(e, 'is_public')}
-          options={[
-            { id: 'yes', name: 'Yes' },
-            { id: 'no', name: 'No' }
-          ]}
-        />
-      </div>
-    </>
-  );
-};
-
-const AddressGroup = ({
-  street,
-  city,
-  state,
-  zip,
-  county,
-  country,
-  addressPublic,
-  index,
-  setStreet,
-  setCity,
-  setState,
-  setZip,
-  setCounty,
-  setCountry,
-  setAddressPublic,
-  errors,
-  provinces,
-  countries
-}) => {
-  return (
-    <>
-      <div className="form-group col-md-6 col-lg-3 col-xl-3">
-        <Input
-          type={'text'}
-          title={'Street Address'}
-          name={'street'}
-          value={street}
-          placeholder={'Address street'}
-          handleChange={(e) => setStreet(e.target.value)}
-          errors={errors}
-        />{' '}
-      </div>
-      <div className="form-group col-md-4 col-lg-3 col-xl-2">
-        <Input
-          type={'text'}
-          title={'City'}
-          name={'city'}
-          value={city}
-          placeholder={'Address city'}
-          handleChange={(e) => setCity(e.target.value)}
-          errors={errors}
-        />{' '}
-      </div>
-      <div className="form-group col-md-3 col-lg-2 col-xl-2">
-        <Province
-          title={'State'}
-          name={'state'}
-          options={provinces}
-          value={state}
-          placeholder={'Select State'}
-          handleChange={(e) => setState(e.target.value)}
-        />{' '}
-      </div>
-      <div className="form-group col-md-2 col-lg-2 col-xl-2">
-        <Input
-          type={'text'}
-          title={'Zip Code'}
-          name={'zip'}
-          value={zip}
-          placeholder={'Zip code'}
-          handleChange={(e) => setZip(e.target.value)}
-          errors={errors}
-        />{' '}
-      </div>
-      <div className="form-group col-md-3 col-lg-2 col-xl-3">
-        <Input
-          type={'text'}
-          title={'County'}
-          name={'county'}
-          value={county}
-          placeholder={'County'}
-          handleChange={(e) => setCounty(e.target.value)}
-          errors={errors}
-        />{' '}
-      </div>
-      <div className="form-group col-md-4 col-lg-2 col-xl-3">
-        <Country
-          title={'Country'}
-          name={'country'}
-          options={countries}
-          value={country}
-          countryCode={'US'}
-          placeholder={'Select Country'}
-          handleChange={(e) => setCountry(e.target.value)}
-        />{' '}
-      </div>
-      <div className="form-group col-md-8 col-lg-6 col-xl-5">
-        <DropDownInput
-          type={'select'}
-          as={'select'}
-          title={'Is Address to be public on the map?'}
-          name={'address_public'}
-          value={addressPublic}
-          multiple={''}
-          handleChange={(e) => setAddressPublic(e.target.value)}
-          options={[
-            { id: 'yes', name: 'Yes' },
-            { id: 'no', name: 'No' }
-          ]}
-        />
-      </div>
-    </>
-  );
-};
