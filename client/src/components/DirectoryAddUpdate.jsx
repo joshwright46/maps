@@ -92,11 +92,7 @@ export default function DirectoryAddUpdate() {
   ]);
 
   const [contactEmail, setContactEmail] = useState([]);
-  const [contactEmailPublic, setContactEmailPublic] =
-    useState(DEFAULT_FORM_YES_NO);
   const [contactPhone, setContactPhone] = useState('');
-  const [contactPhonePublic, setContactPhonePublic] =
-    useState(DEFAULT_FORM_YES_NO);
   const [entityTypes, setEntityTypes] = useState([]);
   const [scope, setScope] = useState('Local');
   const [tags, setTags] = useState('');
@@ -266,6 +262,8 @@ export default function DirectoryAddUpdate() {
       case entityTypes:
         filteredItem = 'entity_types';
         break;
+      default:
+        break;
     }
 
     if (errors?.coop?.hasOwnProperty(filteredItem)) {
@@ -407,8 +405,7 @@ export default function DirectoryAddUpdate() {
       (errors) => {
         setErrors(errors);
       },
-      function (data) {
-        const result = data;
+      function () {
         clearForm();
         window.scrollTo(0, 0);
 
@@ -620,6 +617,7 @@ export default function DirectoryAddUpdate() {
               {contactMethods &&
                 contactMethods.map((contact, index) => (
                   <ContactMethodInput
+                    key={index}
                     prefix={'General'}
                     contactMethod={contact}
                     index={index}
