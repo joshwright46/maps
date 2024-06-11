@@ -135,7 +135,7 @@ class TestCoopProposalWorkflow(APITestCase):
         }
         self.mock_raw_dict = {'lat': 37.4221, 'lon': -122.0841, 'place_id': 'XXXYYYYZZZ', 'address': {'county': 'Testing County'}}
   
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_CoopProposalCreateReviewWorkflow(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)

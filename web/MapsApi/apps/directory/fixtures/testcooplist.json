@@ -756,13 +756,12 @@
   }
 },
 {
-  "model": "auth.user",
+  "model": "users.user",
   "pk": 1,
   "fields": {
     "password": "pbkdf2_sha256$260000$ffqG6vs3Muo2UvORmMA5Lx$kxFKQ3jwYjWwCYX0HbHiv07i0p3yizVhZ7J25nMjAqM=",
     "last_login": "2024-03-26T03:14:09.298Z",
     "is_superuser": true,
-    "username": "chicommons",
     "first_name": "",
     "last_name": "",
     "email": "chicommons@example.com",
@@ -770,7 +769,9 @@
     "is_active": true,
     "date_joined": "2024-03-26T02:48:35.544Z",
     "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "activation_token": "3a85a79ffc5d42fc93ba4ff2e9328c43",
+    "activation_token_expires": "2024-06-12T20:19:05.498099Z"
   }
 },
 {

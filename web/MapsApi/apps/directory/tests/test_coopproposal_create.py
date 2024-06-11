@@ -21,11 +21,11 @@ class TestCoopProposalCreate(APITestCase):
         self.staging_dir_path = (pathlib.Path(__file__).parent / 'files' / 'staging').resolve()
         self.testcases_dir_path = (pathlib.Path(__file__).parent / 'files' / 'testcases').resolve()
         self.mock_raw_dict = {'lat': 37.4221, 'lon': -122.0841, 'place_id': 'XXXYYYYZZZ', 'address': {'county': 'Testing County'}}
-        self.user = User.objects.create_user(username='testuser', password='password')
-        self.token = helpers.obtain_jwt_token("testuser", "password")
+        self.user = User.objects.create_user(email='testuser@example.com', password='password')
+        self.token = helpers.obtain_jwt_token("testuser@example.com", "password")
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
   
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_create_empty(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -69,7 +69,7 @@ class TestCoopProposalCreate(APITestCase):
         self.assertEqual(coop.people.count(), 0)
         self.assertEqual(coop.contact_methods.count(), 0)
 
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_create_basic(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -121,7 +121,7 @@ class TestCoopProposalCreate(APITestCase):
         self.assertEqual(coop.people.count(), 0)
         self.assertEqual(coop.contact_methods.count(), 0)
 
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_create_full(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)

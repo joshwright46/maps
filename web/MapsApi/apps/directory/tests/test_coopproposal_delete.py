@@ -1,7 +1,7 @@
-from directory.models import CoopProposal, CoopPublic, Coop, CoopType, ContactMethod, Address, CoopAddressTags, Person, User
+from apps.directory.models import CoopProposal, CoopPublic, Coop, CoopType, ContactMethod, Address, CoopAddressTags, Person, User
 from rest_framework.test import APITestCase
 from unittest.mock import patch, MagicMock
-from directory.services.location_service import LocationService
+from apps.directory.services.location_service import LocationService
 from ratelimit import limits, RateLimitException
 import pathlib
 from . import helpers
@@ -17,8 +17,8 @@ class TestCoopProposalDelete(APITestCase):
         self.staging_dir_path = (pathlib.Path(__file__).parent / 'files' / 'staging').resolve()
         self.testcases_dir_path = (pathlib.Path(__file__).parent / 'files' / 'testcases').resolve()
         self.mock_raw_dict = {'lat': 37.4221, 'lon': -122.0841, 'place_id': 'XXXYYYYZZZ', 'address': {'county': 'Testing County'}}
-        self.user = User.objects.create_superuser(username='testuser', password='password')
-        self.token = helpers.obtain_jwt_token("testuser", "password")
+        self.user = User.objects.create_superuser(email='testuser@example.com', password='password')
+        self.token = helpers.obtain_jwt_token("testuser@example.com", "password")
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
         self.create_data = {
             "operation": "CREATE",
@@ -65,7 +65,7 @@ class TestCoopProposalDelete(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.coop_public_id = response.data["coop_public_id"]
 
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_delete(self, mock_nominatim):
          # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)

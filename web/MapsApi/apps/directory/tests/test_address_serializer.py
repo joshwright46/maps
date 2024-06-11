@@ -37,7 +37,7 @@ class TestAddressSerializer(APITestCase):
         self.mock_raw_dict = {'lat': 37.4221, 'lon': -122.0841, 'place_id': 'XXXYYYYZZZ', 'address': {'county': 'Testing County'}}
  
     
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_addressserializer_create(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -62,7 +62,7 @@ class TestAddressSerializer(APITestCase):
         self.assertEqual(address.longitude, self.mock_raw_dict['lon'])
         self.assertEqual(address.county, self.mock_raw_dict['address']['county'] )
 
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_addressserializer_update(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -88,7 +88,7 @@ class TestAddressSerializer(APITestCase):
         self.assertEqual(address.longitude, self.mock_raw_dict['lon'])
         self.assertEqual(address.county, self.mock_raw_dict['address']['county'] )
 
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_addresscache_hit(self, mock_nominatim):
         # Prepopulate the cache with a mock response for our test address
         AddressCache.objects.create(query=self.query, response=json.dumps(self.mock_raw_dict), place_id=self.mock_raw_dict['place_id'])
@@ -105,7 +105,7 @@ class TestAddressSerializer(APITestCase):
         self.assertEqual(self.address.longitude, self.mock_raw_dict['lon'])
         mock_nominatim.assert_not_called()  # Nominatim should not be called due to cache hit
 
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_addresscache_miss(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -125,8 +125,8 @@ class TestAddressSerializer(APITestCase):
         # Check that the response is now cached
         self.assertTrue(AddressCache.objects.filter(query=self.query).exists())
 
-    @patch('directory.services.location_service.Nominatim')
-    @patch('directory.services.location_service.LocationService.save_coords')
+    @patch('apps.directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.LocationService.save_coords')
     def test_save_coords_triggered_on_address_create(self, mock_save_coords, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -142,8 +142,8 @@ class TestAddressSerializer(APITestCase):
         mock_save_coords.assert_called_once()
         self.assertEqual(Address.objects.count(), 2) # 1) self.address, 2) new address created here
 
-    @patch('directory.services.location_service.Nominatim')
-    @patch('directory.services.location_service.LocationService.save_coords')
+    @patch('apps.directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.LocationService.save_coords')
     def test_save_coords_triggered_on_address_update(self, mock_save_coords, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -168,8 +168,8 @@ class TestAddressSerializer(APITestCase):
         mock_save_coords.assert_called_once()
         self.assertEqual(Address.objects.count(), 1) # 1) updated self.address
     
-    @patch('directory.services.location_service.Nominatim')
-    @patch('directory.services.location_service.LocationService.save_county')
+    @patch('apps.directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.LocationService.save_county')
     def test_save_county_triggered_on_address_create(self, mock_save_county, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -185,8 +185,8 @@ class TestAddressSerializer(APITestCase):
         mock_save_county.assert_called_once()
         self.assertEqual(Address.objects.count(), 2) # 1) self.address, 2) new address created here
 
-    @patch('directory.services.location_service.Nominatim')
-    @patch('directory.services.location_service.LocationService.save_coords')
+    @patch('apps.directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.LocationService.save_coords')
     def test_save_county_triggered_on_address_update(self, mock_save_county, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -211,7 +211,7 @@ class TestAddressSerializer(APITestCase):
         mock_save_county.assert_called_once()
         self.assertEqual(Address.objects.count(), 1) # 1) updated self.address
 
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     def test_rate_limit_enforcement(self, mock_nominatim):
         # Setup mock response for Location Service's Geocode API (Nominatim)
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
@@ -224,7 +224,7 @@ class TestAddressSerializer(APITestCase):
                 # Verify that RateLimitException is raised on exceeding rate limit
                 self.assertIsInstance(e, RateLimitException)
     
-    @patch('directory.services.location_service.Nominatim')
+    @patch('apps.directory.services.location_service.Nominatim')
     @patch('time.sleep', return_value=None)  # Mock time.sleep to simulate passage of time without actually waiting
     def test_exponential_backoff(self, mock_sleep, mock_nominatim):
         # Setup the mocked Nominatim service to alternate between raising RateLimitException and returning a valid response

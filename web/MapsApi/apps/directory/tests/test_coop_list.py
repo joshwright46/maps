@@ -1,5 +1,5 @@
 from apps.directory.models import Coop
-from django.contrib.auth.models import User
+from apps.users.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
@@ -15,7 +15,7 @@ class TestCoopList(APITestCase):
     def setUpTestData(cls):
         pass
 
-    @patch('directory.services.location_service.Nominatim')    
+    @patch('apps.directory.services.location_service.Nominatim')    
     def setUp(self, mock_nominatim):
         self.mock_raw_dict = {'lat': 37.4221, 'lon': -122.0841, 'place_id': 'XXXYYYYZZZ', 'address': {'county': 'Testing County'}}
 
@@ -23,7 +23,7 @@ class TestCoopList(APITestCase):
         mock_nominatim.return_value.geocode.return_value.configure_mock(raw=self.mock_raw_dict)
 
         # Creating Coops as Superuser
-        self.user = User.objects.create_superuser(username='admin', email='test@example.com', password='admin')
+        self.user = User.objects.create_superuser(email='test@example.com', password='admin', first_name="Super", last_name="User")
         client = APIClient()
         token = helpers.obtain_jwt_token("admin", "admin")
         client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')

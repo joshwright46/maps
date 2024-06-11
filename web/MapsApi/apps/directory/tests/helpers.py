@@ -31,9 +31,9 @@ def remove_keys_from_dict(obj, keys_to_remove):
     else:
         return obj
 
-def obtain_jwt_token(username, password):
+def obtain_jwt_token(email, password):
     client = APIClient()
-    response = client.post(reverse('token_obtain_pair'), {'username': username, 'password': password})
+    response = client.post(reverse('token_obtain_pair'), {'email': email, 'password': password})
     if 'access' in response.data:
         return response.data['access']
     else:
