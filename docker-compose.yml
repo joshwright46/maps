@@ -4,13 +4,13 @@ services:
 
   web:
     container_name: web-dev
-    restart: always
+    restart: no
     build: 
       context: ./web
       dockerfile: Dockerfile_dev
     environment:
      - DEBUG='true'
-     - DJANGO_SETTINGS_MODULE=directory.settings.dev
+     - DJANGO_SETTINGS_MODULE=MapsApi.settings.dev
     ports:
      - 8000:8000
     volumes: 
@@ -19,7 +19,7 @@ services:
 
   client:
     container_name: client-dev
-    restart: always
+    restart: no
     build:
       context: ./client
       dockerfile: Dockerfile_dev

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /code/
+cd /code/MapsApi/
 
 python manage.py collectstatic --no-input
 
