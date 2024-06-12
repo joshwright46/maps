@@ -3,6 +3,7 @@ from django.contrib.auth.models import UserManager as BaseUserManager
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
+from phonenumber_field.modelfields import PhoneNumberField
 import uuid
 
 class UserManager(BaseUserManager):
@@ -38,6 +39,8 @@ class User(AbstractUser):
     activation_token = models.UUIDField(null=False)
     activation_token_expires = models.DateTimeField(null=False)  # expires in 24 hours
     profile_photo = models.ImageField(upload_to="profile_photos/", null=True)
+    phone = PhoneNumberField(blank=True)
+    github_username = models.CharField(max_length=165, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['password', 'first_name', 'last_name']

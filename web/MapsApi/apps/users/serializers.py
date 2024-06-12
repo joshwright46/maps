@@ -38,8 +38,6 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 class UserSerializer(serializers.ModelSerializer):
-    # first_name
-    #  - Trimmed Length = 0 ("This field may not be blank.")
     first_name = serializers.CharField(
         required=True,
         validators=[
@@ -48,8 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
             MaxLengthValidator(150, message="Must be no more than 150 characters.")
         ]
     )
-    # last_name
-    #  - Trimmed Length = 0 ("This field may not be blank.")
+
     last_name = serializers.CharField(
         required=True,
         validators=[
@@ -58,8 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
             MaxLengthValidator(150, message="Must be no more than 150 characters.")
         ]        
     )
-    # email: validator managed by serializers.EmailField
-    #  - Validate email format. ("Enter a valid email address.")
+
     email = serializers.EmailField(
         validators=[
             UniqueValidator(
@@ -68,11 +64,7 @@ class UserSerializer(serializers.ModelSerializer):
             )
         ]
     )
-    # password: validators managed by settings.AUTH_PASSWORD_VALIDATORS
-    #  - Length >= 8 [MinimumLengthValidator] ("This password is too short. It must contain at least 8 characters.")
-    #  - Password can't be entirely numeric [NumericPasswordValidator] ("This password is entirely numeric.")
-    #  - Password is different from email, username, first_name, last_name [UserAttributeSimilarityValidator] (Backend only)
-    #  - Password is not common [CommonPasswordValidator] (Backend only)
+
     password = serializers.CharField(
         required=True,
         write_only=True,
@@ -81,17 +73,24 @@ class UserSerializer(serializers.ModelSerializer):
         ]        
     )
 
-    # profile_photo
-    # - "The file must be less than 5 MB." (Frontend)
-    # - "The file must be a jpeg, png, or gif." (Frontend)
-    # - "The submitted data was not a file. Check the encoding type on the form." (Backend)
     profile_photo = serializers.ImageField(
         required=False
     )
 
+    phone = serializers.CharField(
+        allow_blank=True, 
+        required=False
+    )
+
+    github_username = serializers.CharField(
+        allow_blank=True, 
+        required=False, 
+        max_length=165
+    )
+
     class Meta:
         model = User
-        fields = ('email', 'password', 'first_name', 'last_name', 'profile_photo')
+        fields = ('email', 'password', 'first_name', 'last_name', 'profile_photo', 'phone', 'github_username')
 
     def validate_password(self, value):
         validate_password(value)
@@ -108,6 +107,8 @@ class UserSerializer(serializers.ModelSerializer):
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
             profile_photo=validated_data.get('profile_photo', None),
+            phone=validated_data.get('phone', ''),
+            github_username=validated_data.get('github_username', ''),
 
             is_verified=False,
             activation_token=uuid.uuid4(),
