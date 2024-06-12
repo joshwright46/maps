@@ -13,7 +13,7 @@ services:
 
   web:
     container_name: web-prod
-    restart: always
+    restart: no
     build:
       context: ./web
       dockerfile: Dockerfile_prod
