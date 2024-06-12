@@ -18,7 +18,4 @@ urlpatterns = [
     path('predefined_types/', views.CoopTypeList.as_view()),
     path('types/', views.CoopTypeList.as_view(), name='cooptype-list'),
     path('types/<int:pk>/', views.CoopTypeDetail.as_view(), name='cooptype-detail'),
-
-    path('countries/', views.CountryList.as_view(), name='country-list'),        
-    path('states/<str:country_code>', views.StateList.as_view(), name='state-list'),
 ]
