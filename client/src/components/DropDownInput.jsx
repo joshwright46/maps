@@ -13,6 +13,8 @@ const DropDownInput = (props) => {
         isInvalid={props.errors && errorsArr}
         as={props.as}
         id={props.name}
+        data-index={props.index}
+        data-parent={props.parent}
         name={props.name}
         value={props.value}
         onChange={props.handleChange}
