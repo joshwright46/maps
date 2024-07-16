@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import HamburgerMenu from 'react-hamburger-menu';
 import { isMobile } from 'react-device-detect';
-import { useAuthentication } from '../hooks';
 import './NavBar.css';
 
 class NavBar extends Component {
@@ -12,6 +11,12 @@ class NavBar extends Component {
       open: false,
       hideOrShowHambugerDropDown: 'nav'
     };
+
+    this.logOut = (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem('token');
+      window.location.reload();
+    }
   }
 
   handleClick = () => {
@@ -64,26 +69,32 @@ class NavBar extends Component {
             Return
           </a>
         </li>
-        {this.props.authed && (
+        { this.props.authed && (
+          <>
           <li className="nav-link">
             <NavLink to="/spreadsheet" className="nav-link">
               Update Coops
             </NavLink>
           </li>
-        )}
-        {!this.props.authed ? (
-          <li className="nav-link">
-            <NavLink to="/login" className="nav-link">
-              Login
-            </NavLink>
-          </li>
-        ) : (
           <li className="nav-link">
             <NavLink to="/signup" className="nav-link">
               New User
             </NavLink>
           </li>
-        )}
+          <li className="nav-link">
+            <button onClick={this.logOut} className="nav-link">
+              Logout
+            </button>
+          </li>
+          </>
+        ) }
+        { !this.props.authed && (
+          <li className="nav-link">
+            <NavLink to="/login" className="nav-link">
+              Login
+            </NavLink>
+          </li>
+        ) }
       </ul>
     );
   };
