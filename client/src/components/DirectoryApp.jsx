@@ -9,6 +9,7 @@ import Edit from './Edit';
 import Search from './Search';
 import Login from './Login';
 import ResetPassword from './ResetPassword';
+import ResetVerify from './ResetVerify';
 import NewUser from './NewUser';
 import NoCoordsSearch from './NoCoordsSearch';
 import DirectoryAddUpdate from './DirectoryAddUpdate';
@@ -47,6 +48,7 @@ const DirectoryApp = () => {
                 <Route exact path="/" component={Map} />
                 <Route path="/login" component={Login} />
                 <Route path="/reset-password" component={ResetPassword} />
+                <Route path="/reset-verify/:uid/:token" component={ResetVerify} />
                 <PrivateRoute
                   authed={isAuthenticated}
                   path="/signup"

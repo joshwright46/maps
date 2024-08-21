@@ -36,6 +36,7 @@ const Login = () => {
         if (jsob.access) {
           sessionStorage.setItem('token', jsob.access);
           setRedirect(true);
+          window.location.reload();
         }
       });
   };

@@ -9,35 +9,38 @@ import Button from './Button'
 const { REACT_APP_PROXY } = process.env;
 
 const ResetPassword = () => {
-  const [username, setUsername] = useState("")
-  const [redirect, setRedirect] = useState(false)
+  const [email, setEmail] = useState("");
+  const [redirect, setRedirect] = useState(false);
   const [cookies, setCookie] = useCookies(["csrftoken"]);
 
   const [errors, setErrors] = useState()
 
   const handleFormSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
+
     console.log(cookies);
     const csrftoken = cookies;
     console.log("token:" + csrftoken);
-    fetch(REACT_APP_PROXY + '/reset_password', {
+
+    fetch(REACT_APP_PROXY + '/api/v1/password-reset/', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'X-CSRFToken': csrftoken
       },
-      body: JSON.stringify({username})
-    }).then(resp => resp.json())
+      body: JSON.stringify({ "email": email })
+    }).then(res => res.json())
     .then(jsob => {
-      if(!jsob.ok){
-        console.log(jsob)
-        setErrors(jsob)
+      if (jsob.error) {
+        console.log(jsob.error);
+        setErrors(jsob.error);
+      } else {
+        console.log(jsob);
+        setErrors(jsob.message);
       }
-      if(jsob.token){
-        sessionStorage.setItem('token', jsob.token)
-        setRedirect(true)
-      }
+    }).catch(err => {
+      console.log(err);
     })
   }
 
@@ -46,7 +49,7 @@ const ResetPassword = () => {
       {redirect && <Redirect to="/" />}
       <h1 className="form__title">Reset Password</h1>
       <h2 className="form__desc">
-        Please enter your your username to have a reset-password email sent.
+        Please enter your your email address to have a reset-password email sent.
       </h2>
       <h2 className="form__desc">
         <span style={{ color: "red" }}>*</span> = required
@@ -61,11 +64,11 @@ const ResetPassword = () => {
             <Input
               className={"required"}
               type={"text"}
-              title={"Username"}
-              name={"username"}
-              value={username}
-              placeholder={"Username"}
-              handleChange={(e) => setUsername(e.target.value)}
+              title={"E-mail"}
+              name={"email"}
+              value={email}
+              placeholder={"E-mail"}
+              handleChange={(e) => setEmail(e.target.value)}
               errors={errors}
             />
           </div>
@@ -74,6 +77,7 @@ const ResetPassword = () => {
           </div>
         </FormGroup>
       </form>
+      { errors && <span style={{ color: "red" }}>{ errors }</span> }
     </div>
   )
 }

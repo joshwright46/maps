@@ -32,6 +32,12 @@ ul.hamburgerDropDown {
 .nav-link {
   color: #2295a2;
   padding: 0;
+  border: none;
+  background: none;
+
+  &:hover {
+    color: #16636b;
+  }
 }
 
 .navbar ul {
