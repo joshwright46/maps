@@ -2,7 +2,7 @@ import React from "react";
 import { FormControl, FormLabel } from "react-bootstrap";
 import _ from "lodash";
 
-const Input = React.forwardRef(props, ref) => {
+const Input = React.forwardRef((props, ref) => {
   const errorsArr = _.get(props.errors, props.name);
 
   return (
@@ -37,7 +37,7 @@ const Input = React.forwardRef(props, ref) => {
       )}
     </div>
   );
-};
+});
 const inputStyle = {
   color: "#124E54",
 };
