@@ -2,7 +2,7 @@ import React from "react";
 import { FormControl, FormLabel } from "react-bootstrap";
 import _ from "lodash";
 
-const Input = (props) => {
+const Input = React.forwardRef(props, ref) => {
   const errorsArr = _.get(props.errors, props.name);
 
   return (
@@ -11,6 +11,7 @@ const Input = (props) => {
         {props.title}
       </FormLabel>
       <FormControl
+        ref={ref} // Forward the ref to FormControl
         isInvalid={props.errors && errorsArr}
         type={props.type}
         id={props.name}
