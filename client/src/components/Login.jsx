@@ -70,6 +70,7 @@ const Login = () => {
         <FormGroup>
           <div className="form-group col-md-8">
             <Input
+              ref={usernameRef} // Add ref to Input component
               className={'required'}
               type={'text'}
               title={'Username'}
